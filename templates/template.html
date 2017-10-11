@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Что в кино">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Что в кино</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+  </head>
+
+  <body>
+
+    <nav class="navbar">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Что в кино?</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <p>Здесь собраны 10 самых популярных фильмов, которые идут в большинстве московских кинотеатров</p>
+      <p class="text-muted">Данные актуальны на {{time}}</p>
+      {% for film in films %}
+
+      <hr>
+      <div class="row">
+        <div class="col-sm-2">
+          <img src="{{film['image_link']}}" class="img-responsive">
+        </div>
+        <div class="col-sm-10">
+        <div class="row">
+        <div class="col-sm-8">
+          <h2><a href="{{film['film_name']['link']}}">{{film['film_name']['name']}}</a></h2>
+          <p>Режиссер: <a href="{{film['author']['link']}}">{{film['author']['name']}}</a></p>
+        </div>
+        <div class="col-sm-4 text-right">
+          <br>
+          <p>Средняя оценка: {{film['rating']}}</p>
+          <p class="text-muted">Количество голосов: {{film['votes']}}</p>
+        </div>
+        <br>
+        <br>
+        </div>
+          <p>{{film['synopsys']}}</p>
+        </div>
+      </div>
+      {% endfor %}
+
+      <hr>
+      <div class="text-center">
+        <h4>Настоящий сайт создан в исключительно учебных целях. Все сведения о фильмах взяты с сайтов <a href="https://www.afisha.ru/">Афиша</a>  и  <a href="https://www.kinopoisk.ru/">Кинопоиск</a>.</h4>
+      </div>
+
+    </div><!-- /.container -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  </body>
+</html>
