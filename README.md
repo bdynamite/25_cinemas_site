@@ -1,6 +1,6 @@
 # Cinemas Site
 
-(This app)[https://top-movies-bd.herokuapp.com/] shows ten most popular movies at the Moscow's cinemas
+[This app](https://top-movies-bd.herokuapp.com/) shows ten most popular movies at the Moscow's cinemas
 
 # How to local use
 
