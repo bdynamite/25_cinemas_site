@@ -40,17 +40,24 @@ def get_films_from_afisha(soup, min_cinemas_count=30):
 def get_soup_from_kinopoisk(film_name, proxy_list):
     kinopoisk_url = 'https://www.kinopoisk.ru/index.php'
     url_params = {'first': 'yes', 'kp_query': film_name['name']}
-
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Agent:{}'.format(random.choice(AGENT_LIST))
-    }
-    proxy = {'http': random.choice(proxy_list)}
-
-    responce = requests.get(kinopoisk_url, params=url_params, headers=headers, proxies=proxy)
+    while True:
+        headers = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'Agent:{}'.format(random.choice(AGENT_LIST))
+        }
+        proxy = {'http': random.choice(proxy_list)}
+        try:
+            responce = requests.get(kinopoisk_url, params=url_params, headers=headers, proxies=proxy)
+        except(requests.exceptions.ConnectTimeout,
+               requests.exceptions.ConnectionError,
+               requests.exceptions.ProxyError,
+               requests.exceptions.ReadTimeout):
+            continue
+        else:
+            break
     return BeautifulSoup(responce.text, 'html.parser')
 
 
