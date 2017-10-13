@@ -2,11 +2,21 @@ import json
 from concurrent import futures
 import pytz
 import datetime
+from apscheduler.schedulers.blocking import BlockingScheduler
+import random
 
 from bs4 import BeautifulSoup
 import requests
 
 MAX_WORKERS = 20
+PROXY_URL = 'http://www.freeproxy-list.ru/api/proxy'
+AGENT_LIST = [
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12 AppleWebKit/602.4.8',
+    'Mozilla/5.0 (compatible; MSIE 10.0; Macintosh; Intel Mac OS X 10_7_3; Trident/6.0)',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64)',
+    'Opera/9.80 (Windows NT 6.2; WOW64) Presto/2.12.388 Version/12.17'
+]
+sched = BlockingScheduler()
 
 
 def get_soup_from_afisha():
@@ -27,15 +37,25 @@ def get_films_from_afisha(soup, min_cinemas_count=30):
     return films
 
 
-def get_soup_from_kinopoisk(film_name):
+def get_soup_from_kinopoisk(film_name, proxy_list):
     kinopoisk_url = 'https://www.kinopoisk.ru/index.php'
     url_params = {'first': 'yes', 'kp_query': film_name['name']}
-    responce = requests.get(kinopoisk_url, params=url_params)
+
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Agent:{}'.format(random.choice(AGENT_LIST))
+    }
+    proxy = {'http': random.choice(proxy_list)}
+
+    responce = requests.get(kinopoisk_url, params=url_params, headers=headers, proxies=proxy)
     return BeautifulSoup(responce.text, 'html.parser')
 
 
 def get_film_data(film_name):
-    soup = get_soup_from_kinopoisk(film_name)
+    soup = get_soup_from_kinopoisk(film_name, get_proxies())
     rating_tag = soup.find(attrs={'class': 'rating_ball'})
     if rating_tag:
         rating = float(rating_tag.text)
@@ -77,8 +97,16 @@ def get_films(count=10):
     workers = min(len(films_list), MAX_WORKERS)
     with futures.ThreadPoolExecutor(workers) as excecutor:
         films_with_data = list(excecutor.map(get_film_data, films_list))
-    save_data_in_json(sorted(films_with_data, key=lambda x: x['rating'], reverse=True)[:count])
+    return (sorted(films_with_data, key=lambda x: x['rating'], reverse=True)[:count])
+
+
+def get_proxies():
+    params = {'anonymity': 'true', 'token': 'demo'}
+    request = requests.get(PROXY_URL, params=params).text
+    proxies_list = request.split('\n')
+    return proxies_list
 
 
 if __name__ == '__main__':
-    get_films()
+    sched.add_job(get_films, 'interval', minutes=10)
+    sched.start()
