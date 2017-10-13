@@ -104,7 +104,7 @@ def get_films(count=10):
     workers = min(len(films_list), MAX_WORKERS)
     with futures.ThreadPoolExecutor(workers) as excecutor:
         films_with_data = list(excecutor.map(get_film_data, films_list))
-    return (sorted(films_with_data, key=lambda x: x['rating'], reverse=True)[:count])
+    return sorted(films_with_data, key=lambda x: x['rating'], reverse=True)[:count]
 
 
 def get_proxies():
