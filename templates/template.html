@@ -21,13 +21,15 @@
     <nav class="navbar">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="/">Что в кино?</a>
+          <a class="navbar-brand" href="/"><h2>Что в кино?</h2></a>
         </div>
       </div>
     </nav>
+    <br>
 
     <div class="container">
       <p>Здесь собраны 10 самых популярных фильмов, которые идут в большинстве московских кинотеатров</p>
+      <p class="text-muted">Данные актуальны на {{time}}</p>
       {% for film in films %}
 
       <hr>
