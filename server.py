@@ -2,7 +2,7 @@ import tempfile
 
 from flask import Flask, render_template
 from werkzeug.contrib.cache import FileSystemCache
-from cinemas_old import get_films
+from cinemas import get_films
 
 app = Flask(__name__)
 temp_dir = tempfile.mkdtemp()
