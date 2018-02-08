@@ -90,8 +90,9 @@ def get_films(count=10):
         soups_from_kinopoisk = list(executor.map(functools.partial(get_soup_from_kinopoisk,
                                                                    proxies=proxies_list), films_list))
     films_data = [get_film_data(film, soup) for film, soup in zip(films_list, soups_from_kinopoisk)]
+    top_n_films = (sorted(films_data, key=lambda x: x['rating'], reverse=True)[:count])
     return {'time': get_time(),
-            'films': (sorted(films_data, key=lambda x: x['rating'], reverse=True)[:count])}
+            'films': top_n_films}
 
 
 def get_proxies():
