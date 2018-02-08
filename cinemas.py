@@ -2,6 +2,7 @@ from concurrent import futures
 import pytz
 import datetime
 import random
+import functools
 
 from bs4 import BeautifulSoup
 import requests
@@ -14,7 +15,6 @@ AGENT_LIST = [
     'Mozilla/5.0 (Windows NT 6.1; WOW64)',
     'Opera/9.80 (Windows NT 6.2; WOW64) Presto/2.12.388 Version/12.17'
 ]
-PROXIES_LIST = []
 
 
 def get_soup_from_afisha():
@@ -35,7 +35,7 @@ def get_films_from_afisha(soup, min_cinemas_count=30):
     return films
 
 
-def get_soup_from_kinopoisk(film_name, proxy):
+def get_soup_from_kinopoisk(film_name, proxies):
     kinopoisk_url = 'https://www.kinopoisk.ru/index.php'
     url_params = {'first': 'yes', 'kp_query': film_name['name']}
     headers = {
@@ -45,13 +45,12 @@ def get_soup_from_kinopoisk(film_name, proxy):
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': 'Agent:{}'.format(random.choice(AGENT_LIST))
         }
-    proxy_url = {'http': proxy}
+    proxy_url = {'http': random.choice(proxies)}
     response = requests.get(kinopoisk_url, params=url_params, headers=headers, proxies=proxy_url)
     return BeautifulSoup(response.text, 'html.parser')
 
 
-def get_film_data(film_name):
-    soup = get_soup_from_kinopoisk(film_name, random.choice(PROXIES_LIST))
+def get_film_data(film_name, soup):
     if not soup:
         return
     rating_tag = soup.find(attrs={'class': 'rating_ball'})
@@ -86,16 +85,18 @@ def get_time():
 def get_films(count=10):
     films_list = get_films_from_afisha(get_soup_from_afisha())
     workers = min(len(films_list), MAX_WORKERS)
-    set_proxies()
+    proxies_list = get_proxies()
     with futures.ThreadPoolExecutor(workers) as executor:
-        films_with_data = list(executor.map(get_film_data, films_list))
+        soups_from_kinopoisk = list(executor.map(functools.partial(get_soup_from_kinopoisk,
+                                                                   proxies=proxies_list), films_list))
+    films_data = [get_film_data(film, soup) for film, soup in zip(films_list, soups_from_kinopoisk)]
     return {'time': get_time(),
-            'films': (sorted(films_with_data, key=lambda x: x['rating'], reverse=True)[:count])}
+            'films': (sorted(films_data, key=lambda x: x['rating'], reverse=True)[:count])}
 
 
-def set_proxies():
+def get_proxies():
     response = requests.get(PROXY_URL).text
-    PROXIES_LIST.extend(response.split('\r\n')[1:-1])
+    return response.split('\r\n')[1:-1]
 
 
 if __name__ == '__main__':
