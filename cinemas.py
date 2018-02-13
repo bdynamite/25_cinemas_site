@@ -27,12 +27,12 @@ def convert_html_to_film_info(film_html):
     return {'name': film_html.text, 'link': film_html.a['href']}
 
 
-def get_films_from_afisha(soup, min_cinemas_count=30):
+def get_films_from_afisha(soup, min_cinemas_count=30, max_count=10):
     all_films = soup.find_all(attrs={'class': 'object s-votes-hover-area collapsed'})
     films = [convert_html_to_film_info(film.find(attrs={'class': 'usetags'}))
              for film in all_films
              if len(film.find_all(attrs={'class': 'b-td-item'})) >= min_cinemas_count]
-    return films
+    return films[:max_count]
 
 
 def get_soup_from_kinopoisk(film_name, proxies):
@@ -82,7 +82,7 @@ def get_time():
     return datetime.datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def get_films(count=10):
+def get_films():
     films_list = get_films_from_afisha(get_soup_from_afisha())
     workers = min(len(films_list), MAX_WORKERS)
     proxies_list = get_proxies()
@@ -90,9 +90,9 @@ def get_films(count=10):
         soups_from_kinopoisk = list(executor.map(functools.partial(get_soup_from_kinopoisk,
                                                                    proxies=proxies_list), films_list))
     films_data = [get_film_data(film, soup) for film, soup in zip(films_list, soups_from_kinopoisk)]
-    top_n_films = (sorted(films_data, key=lambda x: x['rating'], reverse=True)[:count])
+    top_films = sorted(films_data, key=lambda x: x['rating'], reverse=True)
     return {'time': get_time(),
-            'films': top_n_films}
+            'films': top_films}
 
 
 def get_proxies():
